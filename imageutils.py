@@ -56,10 +56,10 @@ def orientationImage(img, resolution=25):
     arrow_length = 4
     new_img = img[:]
     grads, orientations = edgedetection.sobel(img)
-    chosen = orientations[resolution:-resolution:resolution, resolution:-resolution:resolution]
+    chosen = orientations[:-resolution:resolution, :-resolution:resolution]
     chosen_directions = getDirections(chosen)
-    for i in range(chosen_directions.shape[0]):
-        for j in range(chosen_directions.shape[1]):
+    for i in range(1, chosen_directions.shape[0]):
+        for j in range(1, chosen_directions.shape[1]):
             row = i * resolution
             col = j * resolution
             direction = chosen_directions[i][j]
