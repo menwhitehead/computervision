@@ -13,12 +13,11 @@ filename = Path(sys.argv[1])
 output_filename = filename.stem + "_gaussian" + filename.suffix
 img = Image.open(filename)
 kind = img.mode
-arr = np.array(img).astype(np.uint8)
+arr = np.array(img)
+arr = imageutils.bytesToFloat(arr)
 blurred = imageutils.gaussianBlur(arr, 7, 1.04)
-# blurred = imageutils.normalizeImage(blurred)
-# print(blurred)
-print(kind)
-output = Image.fromarray(blurred).convert(kind)
+arr = imageutils.floatToBytes(blurred)
+output = Image.fromarray(arr)
 output.save(output_filename)
 
 

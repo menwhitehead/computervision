@@ -11,13 +11,13 @@ import imageutils
 
 filename = Path(sys.argv[1])
 output_filename = filename.stem + "_laplacianedges" + filename.suffix
-img = np.array(Image.open(filename)).astype(np.uint8)
+img = np.array(Image.open(filename))
+img = imageutils.bytesToFloat(img)
 gray = imageutils.grayscale(img)
 edges = edgedetection.laplacian(gray)
-print(edges)
 edges = imageutils.normalizeImage(edges)
-print(edges)
-output = Image.fromarray(edges).convert('L')
+arr = imageutils.floatToBytes(edges)
+output = Image.fromarray(arr)#.convert('L')
 output.save(output_filename)
 
 

@@ -23,22 +23,22 @@ def getGaussianKernel(size=3, sigma=1.4, amp=1.0):
 def gaussianBlur(img, size, sigma=1.4):
     kernel = getGaussianKernel(size, sigma)
     if img.ndim == 2:
-        return scipy.signal.convolve2d(img, kernel, mode="same", boundary="symm").astype(np.uint8)
+        return scipy.signal.convolve2d(img, kernel, mode="same", boundary="symm").astype(np.float)
     elif img.ndim == 3:
         # has RGB 3 channels
         reds = scipy.signal.convolve2d(img[:, :, 0], kernel)
         greens = scipy.signal.convolve2d(img[:, :, 1], kernel)
         blues = scipy.signal.convolve2d(img[:, :, 2], kernel)
         result = np.stack((reds, greens, blues), axis=2)
-        return result.astype(np.uint8)
+        return result.astype(np.float)
 
 
 # Convert a color RGB image to grayscale
 def grayscale(img):
     if img.ndim == 3:
-        gray_img = np.round(0.299 * img[:, :, 0] +
-                            0.587 * img[:, :, 1] +
-                            0.114 * img[:, :, 2]).astype(np.uint8)
+        gray_img = (0.299 * img[:, :, 0] +
+                   0.587 * img[:, :, 1] +
+                   0.114 * img[:, :, 2])
         return gray_img
     else:
         return img
@@ -57,9 +57,18 @@ def scaleImage(img, ratiox, ratioy):
     pass
 
 def normalizeImage(img):
+    # for i in img: print(i)
     small = np.min(img)
     large = np.max(img)
-    return ((img - small) / (large - small)) * 255
+    # print(small, large)
+    #return ((img - small) / (large - small)) * 255
+    return ((img - small) / (large - small))
+
+def bytesToFloat(img):
+    return img / 255.0
+
+def floatToBytes(img):
+    return clipBytes(img * 255.0).astype(np.uint8)
 
 def getDirections(orientations, number_bins=8):
     # Orientations are values between pi and -pi
