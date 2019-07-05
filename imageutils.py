@@ -2,18 +2,35 @@ import numpy as np
 import scipy.signal
 import edgedetection
 
-def getGaussianKernel(size=3):
-    gaussian_filter = (1/273.) * np.array([[ 1.0278445 ,  4.10018648,  6.49510362,  4.10018648,  1.0278445 ],
-               [ 4.10018648, 16.35610171, 25.90969361, 16.35610171,  4.10018648],
-               [ 6.49510362, 25.90969361, 41.0435344 , 25.90969361,  6.49510362],
-               [ 4.10018648, 16.35610171, 25.90969361, 16.35610171,  4.10018648],
-               [ 1.0278445 ,  4.10018648,  6.49510362,  4.10018648,  1.0278445 ]])
-    return gaussian_filter
+
+
+def getGaussianKernel(size=3, sigma=1.4, amp=1.0):
+    kernel = np.zeros((size, size))
+    center = int(size/2)
+    denom = 2 * sigma**2
+    for x in range(size):
+        x_off = ((x - center) **2) / denom
+        for y in range(size):
+            y_off = ((y - center) **2) / denom
+            kernel[x][y] = amp * np.e**(-(x_off + y_off))
+    some = np.sum(kernel)
+    kernel /= some
+
+    return kernel
+
 
 # Blur the image using a Gaussian kernel
-def gaussianBlur(img, size):
-    kernel = getGaussianKernel(size)
-    return scipy.signal.convolve2d(img, kernel)
+def gaussianBlur(img, size, sigma):
+    kernel = getGaussianKernel(size, sigma)
+    if img.ndim == 2:
+        return scipy.signal.convolve2d(img, kernel).astype(np.uint8)
+    elif img.ndim == 3:
+        # has RGB 3 channels
+        reds = scipy.signal.convolve2d(img[:, :, 0], kernel)
+        greens = scipy.signal.convolve2d(img[:, :, 1], kernel)
+        blues = scipy.signal.convolve2d(img[:, :, 2], kernel)
+        result = np.stack((reds, greens, blues), axis=2)
+        return result.astype(np.uint8)
 
 
 # Convert a color RGB image to grayscale
