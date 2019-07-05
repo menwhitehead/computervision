@@ -27,6 +27,14 @@ def grayscale(img):
 def clipBytes(img):
     return np.clip(img, 0, 255)
 
+def rotateImage(img, radians):
+    pass
+
+def cropImage(img, startx, starty, endx, endy):
+    pass
+
+def scaleImage(img, ratiox, ratioy):
+    pass
 
 def normalizeImage(img):
     small = np.min(img)
@@ -50,6 +58,35 @@ def getDirections(orientations, number_bins=8):
     directions = (directions + 4) % number_bins
     return directions
 
+
+def drawLine(img, startrow, startcol, endrow, endcol):
+    if startcol > endcol:
+        startcol, endcol = endcol, startcol
+        startrow, endrow = endrow, startrow
+    drow = endrow - startrow
+    dcol = endcol - startcol
+    count = 0
+    if dcol > 0:
+        for col in range(startcol, endcol):
+            row = int(np.round(startrow + drow * (col - startcol) / dcol))
+            img[row, col] = 255
+            count+=1
+    else:
+        if startrow > endrow:
+            endrow, startrow = startrow, endrow
+        for row in range(startrow, endrow):
+            img[row, startcol] = 255
+            count+=1
+
+
+def drawLineAngle(img, startrow, startcol, angle, length):
+    drow = length * np.sin(angle)
+    dcol = length * np.cos(angle)
+    endrow = int(np.round(startrow + drow))
+    endcol = int(np.round(startcol + dcol))
+    drawLine(img, startrow, startcol, endrow, endcol)
+
+
 # Overlay orientation arrows on a copy of the given image
 # Set the resolution to define how dense the grid of arrows is
 def orientationImage(img, resolution=25):
@@ -63,32 +100,7 @@ def orientationImage(img, resolution=25):
             row = i * resolution
             col = j * resolution
             direction = chosen_directions[i][j]
-
-            if direction == 0:
-                new_img[row, col:col+arrow_length] = 255
-            elif direction == 1:
-                new_img[row, col] = 255
-                new_img[row-1, col+1] = 255
-                new_img[row-2, col+2] = 255
-            elif direction == 2:
-                new_img[row-arrow_length:row, col] = 255
-            elif direction == 3:
-                new_img[row, col] = 255
-                new_img[row-1, col-1] = 255
-                new_img[row-2, col-2] = 255
-            elif direction == 4:
-                new_img[row, col-arrow_length:col] = 255
-            elif direction == 5:
-                new_img[row, col] = 255
-                new_img[row+1, col-1] = 255
-                new_img[row+2, col-2] = 255
-            elif direction == 6:
-                new_img[row:row+arrow_length, col] = 255
-            elif direction == 7:
-                new_img[row, col] = 255
-                new_img[row+1, col+1] = 255
-                new_img[row+2, col+2] = 255
-
+            drawLineAngle(new_img, row, col, np.pi*(direction/4.), arrow_length)
 
     return new_img
 
