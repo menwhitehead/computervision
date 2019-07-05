@@ -20,10 +20,10 @@ def getGaussianKernel(size=3, sigma=1.4, amp=1.0):
 
 
 # Blur the image using a Gaussian kernel
-def gaussianBlur(img, size, sigma):
+def gaussianBlur(img, size, sigma=1.4):
     kernel = getGaussianKernel(size, sigma)
     if img.ndim == 2:
-        return scipy.signal.convolve2d(img, kernel).astype(np.uint8)
+        return scipy.signal.convolve2d(img, kernel, mode="same", boundary="symm").astype(np.uint8)
     elif img.ndim == 3:
         # has RGB 3 channels
         reds = scipy.signal.convolve2d(img[:, :, 0], kernel)
@@ -35,10 +35,13 @@ def gaussianBlur(img, size, sigma):
 
 # Convert a color RGB image to grayscale
 def grayscale(img):
-    gray_img = np.round(0.299 * img[:, :, 0] +
-                        0.587 * img[:, :, 1] +
-                        0.114 * img[:, :, 2]).astype(np.uint8)
-    return gray_img
+    if img.ndim == 3:
+        gray_img = np.round(0.299 * img[:, :, 0] +
+                            0.587 * img[:, :, 1] +
+                            0.114 * img[:, :, 2]).astype(np.uint8)
+        return gray_img
+    else:
+        return img
 
 
 def clipBytes(img):

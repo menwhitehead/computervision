@@ -9,6 +9,13 @@ import imageutils
 # with 0-255 grayscale values
 # Return a gradient matrix and an orientation matrix
 def sobel(img):
+    horizontal_grads, vertical_grads = getSobelGradients(img)
+    img_grads = np.sqrt(pow(horizontal_grads, 2.0) + pow(vertical_grads, 2.0))
+    img_orientations = np.arctan2(vertical_grads, horizontal_grads)
+    return img_grads, img_orientations
+
+
+def getSobelGradients(img):
     # Define filters
     horizontal_kernel = np.array([[-1, 0, 1],
                            [-2, 0, 2],
@@ -17,14 +24,10 @@ def sobel(img):
                          [0, 0, 0],
                          [1, 2, 1]])
 
-    horizontal_grad = scipy.signal.convolve2d(img, horizontal_kernel)
-    vertical_grad = scipy.signal.convolve2d(img, vertical_kernel)
+    horizontal_grads = scipy.signal.convolve2d(img, horizontal_kernel, mode="same", boundary="symm")
+    vertical_grads = scipy.signal.convolve2d(img, vertical_kernel, mode="same", boundary="symm")
 
-    img_grads = np.sqrt(pow(horizontal_grad, 2.0) + pow(vertical_grad, 2.0))
-    img_orientations = np.arctan2(vertical_grad, horizontal_grad)
-
-    return img_grads, img_orientations
-
+    return horizontal_grads, vertical_grads
 
 
 # Laplacian edge detection
@@ -80,13 +83,17 @@ def canny(img):
                 if gradients[row][col] > gradients[row+1][col-1] and gradients[row][col] > gradients[row-1][col+1]:
                     new_grads[row][col] = gradients[row][col]
 
-    high_threshold = 80
-    low_threshold = 70
+    # Threshold by finding the image median and then setting high/low thresholds
+    # a little above and below that median
+    middle = np.median(img)
+    sigma = 0.33
+    high_threshold = int(min(255, (1.0 + sigma) * middle))
+    low_threshold = int(max(0, (1.0 - sigma) * middle))
 
     high_grads = np.where(new_grads > high_threshold, new_grads, 0)
     low_grads = np.where(new_grads > low_threshold, new_grads, 0)
 
-    x = scipy.signal.convolve2d(high_grads, np.ones((3,3)), mode="same")
+    x = scipy.signal.convolve2d(high_grads, np.ones((3,3)), mode="same", boundary="symm")
     upped_grads = np.where(low_grads > x, low_grads, 0)
 
     both_grads = high_grads + upped_grads
