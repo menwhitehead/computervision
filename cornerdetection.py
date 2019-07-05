@@ -1,13 +1,12 @@
 import numpy as np
 import scipy.signal
-from PIL import Image
-import cv2
-import matplotlib.pyplot as plt
 
 import edgedetection
 import imageutils
 
-
+# Perform Harris corner detection
+#
+# Use convolutions and matrix operations to make it speedy
 def harris(img, k=0.05):
     k = 0.05
 
